@@ -7,10 +7,10 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --bg-color: #0f172a; /* Dark Blue elegante */
+            --bg-color: #0f172a;
             --accent-gold: #fbbf24;
-            --slot-bg: #1e293b;
             --text-color: #f1f5f9;
+            --error-color: #ef4444;
         }
 
         body {
@@ -27,6 +27,63 @@
             overflow: hidden;
         }
 
+        /* --- STILI LOGIN FORM --- */
+        #login-section {
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            animation: fadeIn 1s ease;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 2px solid #334155;
+            background: #1e293b;
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        .error-msg {
+            color: var(--error-color);
+            font-size: 0.9rem;
+            height: 20px; /* Riserva spazio per evitare salti */
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .error-msg.visible {
+            opacity: 1;
+        }
+
+        /* --- STILI GIOCO --- */
+        #game-section {
+            display: none; /* Nascosto di default */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #game-section.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* --- STILI COMUNI E SLOT --- */
         h1 {
             font-size: 1.5rem;
             margin-bottom: 20px;
@@ -36,7 +93,6 @@
             text-align: center;
         }
 
-        /* Container della Slot Machine */
         .slot-machine {
             background: linear-gradient(145deg, #2c3e50, #000000);
             padding: 20px;
@@ -48,22 +104,19 @@
             position: relative;
         }
 
-        /* Le finestre dei rulli */
         .reel-container {
             width: 80px;
-            height: 120px; /* Mostra solo 1 icona alla volta */
+            height: 120px;
             background-color: white;
             border-radius: 10px;
-            overflow: hidden; /* Nasconde le altre icone */
+            overflow: hidden;
             position: relative;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
         }
 
-        /* La striscia che contiene tutte le icone e che si muoverà */
         .reel-strip {
             display: flex;
             flex-direction: column;
-            /* La transizione è gestita via JS per il controllo preciso */
             will-change: transform; 
         }
 
@@ -74,11 +127,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Evita selezione del testo accidentale */
             user-select: none; 
         }
 
-        /* Overlay per effetto ombra/profondità sui rulli */
         .reel-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -87,9 +138,7 @@
             z-index: 2;
         }
 
-        /* Bottone Azione */
-        .spin-btn {
-            margin-top: 40px;
+        .action-btn {
             padding: 15px 40px;
             font-size: 1.2rem;
             font-weight: bold;
@@ -101,20 +150,12 @@
             box-shadow: 0 0 15px var(--accent-gold);
             transition: transform 0.2s, box-shadow 0.2s;
             text-transform: uppercase;
+            margin-top: 20px;
         }
 
-        .spin-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .spin-btn:disabled {
-            background: #555;
-            color: #888;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
+        .action-btn:active { transform: scale(0.95); }
+        .action-btn:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
 
-        /* Modal Risultato */
         .result-modal {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -131,23 +172,8 @@
             padding: 20px;
             box-sizing: border-box;
         }
-
-        .result-modal.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .result-modal h2 {
-            font-size: 2.5rem;
-            color: var(--accent-gold);
-            margin: 0 0 20px 0;
-        }
-
-        .result-modal p {
-            font-size: 1.2rem;
-            line-height: 1.6;
-        }
-
+        .result-modal.visible { opacity: 1; pointer-events: auto; }
+        .result-modal h2 { font-size: 2.5rem; color: var(--accent-gold); margin: 0 0 20px 0; }
         .ticket {
             background: #fff;
             color: #333;
@@ -158,148 +184,134 @@
             box-shadow: 0 5px 15px rgba(255,255,255,0.2);
             max-width: 300px;
         }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <h1>Christmas Luck 🎰</h1>
-
-    <div class="slot-machine">
-        <div class="reel-container">
-            <div class="reel-overlay"></div>
-            <div class="reel-strip" id="reel1"></div>
-        </div>
-        <div class="reel-container">
-            <div class="reel-overlay"></div>
-            <div class="reel-strip" id="reel2"></div>
-        </div>
-        <div class="reel-container">
-            <div class="reel-overlay"></div>
-            <div class="reel-strip" id="reel3"></div>
-        </div>
+    <div id="login-section">
+        <h1>Benvenuta ❤️</h1>
+        <p>Inserisci la tua mail per sbloccare il regalo.</p>
+        <input type="email" id="emailInput" class="login-input" placeholder="La tua email...">
+        <div id="errorMsg" class="error-msg">Email non riconosciuta, riprova ╭∩╮( ͡° ͜ʖ ͡°)╭∩╮</div>
+        <button id="loginBtn" class="action-btn">Accedi</button>
     </div>
 
-    <button class="spin-btn" id="spinBtn">Tenta la fortuna</button>
+    <div id="game-section">
+        <h1>🎄🎅🏻 Christmas Present 🎅🏻🎄</h1>
+
+        <div class="slot-machine">
+            <div class="reel-container"><div class="reel-overlay"></div><div class="reel-strip" id="reel1"></div></div>
+            <div class="reel-container"><div class="reel-overlay"></div><div class="reel-strip" id="reel2"></div></div>
+            <div class="reel-container"><div class="reel-overlay"></div><div class="reel-strip" id="reel3"></div></div>
+        </div>
+
+        <button class="action-btn" id="spinBtn">Tenta la fortuna</button>
+    </div>
 
     <div class="result-modal" id="resultModal">
-        <h2>JACKPOT! 🎉</h2>
+        <h2>HAI VINTO! 🥳🥳🎉🎉</h2>
         <div class="ticket">
             <h3>Buono Regalo</h3>
             <p><strong>2 Giorni di Relax Totale</strong></p>
-            <p>Destinazione: <em>Terme & SPA</em></p>
-            <p><small>Scegliamo insieme dove e quando.</small></p>
+            <p>Destinazione: <em>Terme 👀</em></p>
+            <p><small>Da organizzare</small></p>
             <p style="margin-top:10px; font-size:2rem;">🛀✨🍷</p>
         </div>
-        <p style="margin-top: 30px; color: #aaa; font-size: 0.9rem;">Buon Natale Amore ❤️</p>
+        <p style="margin-top: 30px; color: #aaa; font-size: 0.9rem;">Buon Natale 🐻❤️</p>
     </div>
 
     <script>
-        /**
-         * LOGICA DELL'APP
-         * Usiamo Vanilla JS per manipolare il DOM e gestire l'animazione "rigged".
-         */
+        // CONFIGURAZIONE
+        // ---------------------------------------------------------
+        const ALLOWED_EMAIL = "elena.angelella@gmail.com"; 
+        // ---------------------------------------------------------
 
-        // 1. Configurazione Simboli
-        // L'ultimo simbolo dell'array targetSymbols sarà quello vincente (🛀)
-        const icons = ['🎅', '🎄', '🎁', '❄️', '🦌', '⛄', '🍷', '🛀']; 
-        const symbolHeight = 120; // Altezza in px definita nel CSS
+        // ELEMENTI DOM
+        const loginSection = document.getElementById('login-section');
+        const gameSection = document.getElementById('game-section');
+        const loginBtn = document.getElementById('loginBtn');
+        const emailInput = document.getElementById('emailInput');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // LOGICA DI LOGIN
+        loginBtn.addEventListener('click', () => {
+            const val = emailInput.value.trim().toLowerCase();
+            const correct = ALLOWED_EMAIL.trim().toLowerCase();
+
+            if (val === correct) {
+                // Login OK
+                errorMsg.classList.remove('visible');
+                // Fade out login
+                loginSection.style.display = 'none';
+                
+                // Show game
+                gameSection.classList.add('active');
+                
+                // Inizializza i rulli solo ora che sono visibili (best practice)
+                initReels();
+            } else {
+                // Errore
+                errorMsg.classList.add('visible');
+                // Shake effect (opzionale, semplice CSS manipulation)
+                emailInput.style.borderColor = 'var(--error-color)';
+                setTimeout(() => emailInput.style.borderColor = '', 500);
+            }
+        });
+
+        // --- DA QUI IN POI È LA LOGICA DELLA SLOT MACHINE (INVARIATA MA INCAPSULATA) ---
+
+        const icons = ['🎅', '🎄', '🎁', '❄️', '🦌🛷', '⛄', '🍷', '🎀']; 
+        const symbolHeight = 120; 
+        const winningIcon = '🎁';
         const reels = [
             document.getElementById('reel1'),
             document.getElementById('reel2'),
             document.getElementById('reel3')
         ];
-
-        // 2. Inizializzazione Rulli
-        // Riempiamo ogni rullo con una sequenza casuale ripetuta molte volte per permettere lo scroll
-        // Ma assicuriamoci che l'icona "Target" sia in una posizione specifica calcolabile.
-        
-        // Per semplicità: Costruiamo una striscia molto lunga.
-        // Alla fine dell'animazione, forzeremo la posizione sull'icona vincente.
-        
-        // Icona vincente: '🛀'
-        const winningIcon = '🛀';
+        const spinBtn = document.getElementById('spinBtn');
+        const modal = document.getElementById('resultModal');
 
         function initReels() {
             reels.forEach(reel => {
                 let html = '';
-                // Aggiungiamo un set "iniziale" mescolato
                 const shuffled = [...icons].sort(() => 0.5 - Math.random());
-                // Ripetiamo la sequenza per dare "lunghezza" alla striscia
                 for(let i=0; i<30; i++) { 
-                    shuffled.forEach(icon => {
-                        html += `<div class="symbol">${icon}</div>`;
-                    });
+                    shuffled.forEach(icon => { html += `<div class="symbol">${icon}</div>`; });
                 }
-                // IMPORTANTE: Aggiungiamo l'icona vincente alla fine in modo deterministico
-                // O meglio: facciamo in modo che la striscia finisca con l'icona vincente
                 html += `<div class="symbol">${winningIcon}</div>`;
-                
                 reel.innerHTML = html;
             });
         }
 
-        initReels();
-
-        // 3. Logica dello Spin
-        const spinBtn = document.getElementById('spinBtn');
-        const modal = document.getElementById('resultModal');
-
         spinBtn.addEventListener('click', () => {
             spinBtn.disabled = true;
-            spinBtn.textContent = "Good Luck...";
-
-            // Parametri di animazione
-            const baseDuration = 2000; // Durata minima rullo 1
-            const delayBetweenReels = 500; // Ritardo per rullo 2 e 3
+            spinBtn.textContent = "Vediamo che succede 🐸";
+            const baseDuration = 2000; 
+            const delayBetweenReels = 500; 
 
             reels.forEach((reel, index) => {
-                // Calcoliamo l'altezza totale della striscia meno l'altezza di una 'symbol'
-                // Vogliamo atterrare sull'ULTIMO elemento che è il winningIcon
                 const totalHeight = reel.scrollHeight;
                 const targetPosition = totalHeight - symbolHeight; 
-
-                // Aggiungiamo un po' di "casualità" alla durata per realismo, ma crescente
                 const duration = baseDuration + (index * delayBetweenReels);
-                
-                // Applichiamo la transizione CSS via JS
-                // cubic-bezier personalizzato per fare l'effetto "rimbalzo" alla fine non troppo forte
                 reel.style.transition = `transform ${duration}ms cubic-bezier(0.25, 1, 0.5, 1)`;
                 reel.style.transform = `translateY(-${targetPosition}px)`;
             });
 
-            // Quando l'ultimo rullo finisce
             const totalTime = baseDuration + (reels.length - 1) * delayBetweenReels;
-            
-            setTimeout(() => {
-                triggerWin();
-            }, totalTime + 200); // +200ms di buffer
+            setTimeout(() => { triggerWin(); }, totalTime + 200);
         });
 
         function triggerWin() {
-            // Effetto coriandoli
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#fbbf24', '#ffffff', '#ff0000']
-            });
-
-            // Mostra il modal dopo breve ritardo
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#ffffff', '#ff0000'] });
             setTimeout(() => {
                 modal.classList.add('visible');
-                // Altri coriandoli per celebrare
                 setInterval(() => {
-                    confetti({
-                        particleCount: 20,
-                        spread: 100,
-                        origin: { y: 0.7 },
-                        gravity: 2,
-                        scalar: 0.8
-                    });
+                    confetti({ particleCount: 20, spread: 100, origin: { y: 0.7 }, gravity: 2, scalar: 0.8 });
                 }, 1500);
             }, 500);
         }
-
     </script>
 </body>
 </html>
