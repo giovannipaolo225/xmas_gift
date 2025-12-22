@@ -14,18 +14,29 @@
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Helvetica Neue', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-        }
+    margin: 0;
+    padding: 0;
+    
+    /* SFONDO: 
+       La prima parte è un gradiente nero semi-trasparente (overlay) per leggere meglio il testo.
+       La seconda parte è l'URL dell'immagine.
+    */
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                url('https://images.unsplash.com/photo-1576692131265-2e0ee36b206d?q=80&w=1000&auto=format&fit=crop');
+    
+    background-size: cover;       /* Copre tutto lo schermo senza deformarsi */
+    background-position: center;  /* Centra l'immagine */
+    background-attachment: fixed; /* L'immagine sta ferma se scrolli (utile su mobile) */
+    
+    color: var(--text-color);
+    font-family: 'Helvetica Neue', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+}
 
         /* --- STILI LOGIN FORM --- */
         #login-section {
