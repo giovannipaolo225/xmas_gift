@@ -138,7 +138,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            user-select: none; 
+            user-select: none;
+            justify-content: center;
+            user-select: none;
+            margin: 0; 
+            padding: 0;
+            line-height: 120px;
+            box-sizing: border-box;
         }
 
         .reel-overlay {
@@ -292,6 +298,14 @@
                 }
                 html += `<div class="symbol">${winningIcon}</div>`;
                 reel.innerHTML = html;
+
+                reel.style.transition = 'none';
+                // 2. Scegliamo un punto di partenza casuale tra i primi 5 simboli
+                //    Moltiplichiamo per symbolHeight (120) per essere sicuri che sia ALLINEATO al pixel.
+                const startIdx = Math.floor(Math.random() * 5); 
+                const startPos = startIdx * symbolHeight;
+                // 3. Applichiamo la trasformazione
+                reel.style.transform = `translateY(-${startPos}px)`;
             });
         }
 
