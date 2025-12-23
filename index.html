@@ -174,7 +174,7 @@
         .action-btn:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
 
         .result-modal {
-            position: absolute;
+            position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9);
             display: flex;
@@ -188,6 +188,7 @@
             text-align: center;
             padding: 20px;
             box-sizing: border-box;
+            overflow-y: auto;
         }
         .result-modal.visible { opacity: 1; pointer-events: auto; }
         .result-modal h2 { font-size: 2.5rem; color: var(--accent-gold); margin: 0 0 20px 0; }
@@ -350,7 +351,7 @@
                 
                 // AVVIA IL LOOP E SALVA L'ID NELLA VARIABILE
                 confettiInterval = setInterval(() => {
-                    confetti({ particleCount: 50, spread: 100, origin: { y: 0.7 }, gravity: 2, scalar: 0.8 });
+                    confetti({ particleCount: 100, spread: 100, origin: { y: 0.7 }, gravity: 2, scalar: 0.8 });
                 }, 1500);
 
             }, 500);
@@ -359,9 +360,14 @@
         const restartBtn = document.getElementById('restartBtn');
 
         restartBtn.addEventListener('click', () => {
-        // 1. Nascondi il modale
+
+        if (confettiInterval) {
+            clearInterval(confettiInterval);
+            confettiInterval = null;
+        }
+        // Nasconde il modale
         modal.classList.remove('visible');    
-        // 2. Riabilita il bottone principale
+        // Riabilita il bottone principale
         spinBtn.disabled = false;
         spinBtn.textContent = "Proviamo😏";    
         initReels(); 
