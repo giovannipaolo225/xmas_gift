@@ -279,7 +279,7 @@
             }
         });
 
-        // --- DA QUI IN POI È LA LOGICA DELLA SLOT MACHINE (INVARIATA MA INCAPSULATA) ---
+        // --- DA QUI IN POI È LA LOGICA DELLA SLOT MACHINE ---
 
         const icons = ['🎅', '🎄', '🎁', '❄️', '🦌🛷', '⛄', '🍷', '🎀']; 
         const symbolHeight = 120; 
@@ -292,6 +292,9 @@
         const spinBtn = document.getElementById('spinBtn');
         const modal = document.getElementById('resultModal');
 
+        // Intervallo confetti
+        let confettiInterval = null;
+        
         function initReels() {
             reels.forEach(reel => {
                 let html = '';
@@ -315,16 +318,23 @@
         spinBtn.addEventListener('click', () => {
             spinBtn.disabled = true;
             spinBtn.textContent = "Vediamo che succede 🐸";
-            const baseDuration = 4000; 
+            
+            const baseDuration = 3500; 
             const delayBetweenReels = 500; 
 
             reels.forEach((reel, index) => {
                 const totalHeight = reel.scrollHeight;
                 const targetPosition = totalHeight - symbolHeight; 
                 const duration = baseDuration + (index * delayBetweenReels);
+                
                 reel.classList.add('blur-active');
+
                 reel.style.transition = `transform ${duration}ms cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
                 reel.style.transform = `translateY(-${targetPosition}px)`;
+
+                setTimeout(() => {
+                    reel.classList.remove('blur-active');
+                }, duration - 500); 
             });
 
             const totalTime = baseDuration + (reels.length - 1) * delayBetweenReels;
@@ -332,12 +342,17 @@
         });
 
         function triggerWin() {
+            // Esplosione iniziale
             confetti({ particleCount: 250, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#ffffff', '#ff0000'] });
+            
             setTimeout(() => {
                 modal.classList.add('visible');
-                setInterval(() => {
-                    confetti({ particleCount: 20, spread: 100, origin: { y: 0.7 }, gravity: 2, scalar: 0.8 });
+                
+                // AVVIA IL LOOP E SALVA L'ID NELLA VARIABILE
+                confettiInterval = setInterval(() => {
+                    confetti({ particleCount: 50, spread: 100, origin: { y: 0.7 }, gravity: 2, scalar: 0.8 });
                 }, 1500);
+
             }, 500);
         }
 
@@ -349,7 +364,6 @@
         // 2. Riabilita il bottone principale
         spinBtn.disabled = false;
         spinBtn.textContent = "Proviamo😏";    
-        // 3. (Opzionale) Se vuoi resettare i rulli in una posizione random
         initReels(); 
         });
     </script>
