@@ -236,6 +236,9 @@
             <p style="margin-top:10px; font-size:2rem;">🛀✨🍷</p>
         </div>
         <p style="margin-top: 30px; color: #aaa; font-size: 0.9rem;">Buon Natale 🐻❤️</p>
+        <button id="restartBtn" class="action-btn" style="margin-top: 20px; font-size: 1rem; padding: 10px 30px;">
+            Rigioca 🔄
+        </button>
     </div>
 
     <script>
@@ -337,6 +340,18 @@
                 }, 1500);
             }, 500);
         }
+
+        const restartBtn = document.getElementById('restartBtn');
+
+        restartBtn.addEventListener('click', () => {
+        // 1. Nascondi il modale
+        modal.classList.remove('visible');    
+        // 2. Riabilita il bottone principale
+        spinBtn.disabled = false;
+        spinBtn.textContent = "Proviamo😏";    
+        // 3. (Opzionale) Se vuoi resettare i rulli in una posizione random
+        initReels(); 
+        });
     </script>
 </body>
 </html>
