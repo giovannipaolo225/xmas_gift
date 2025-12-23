@@ -95,12 +95,12 @@
             font-weight: 900;
             color: #ef4444; /* Rosso richiesto */
             text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
-            animation: pump 0.9s infinite; /* Pulsazione */
+            animation: pump 0.8s ease-out forwards;
         }
 
         @keyframes pump {
             0% { transform: scale(0.5); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 1; }
             100% { transform: scale(1); opacity: 0; }
         }
 
@@ -235,7 +235,7 @@
 <body>
 
     <div id="login-section">
-        <h1>Benvenuta ❤️</h1>
+        <h1>Benvenuta 🐸❤️</h1>
         <p>Inserisci la mail per sbloccare il regalo.</p>
         <input type="email" id="emailInput" class="login-input" placeholder="La tua email...">
         <div id="errorMsg" class="error-msg">Email non riconosciuta, riprova ╭∩╮( ͡° ͜ʖ ͡°)╭∩╮</div>
