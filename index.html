@@ -255,33 +255,6 @@
         const emailInput = document.getElementById('emailInput');
         const errorMsg = document.getElementById('errorMsg');
 
-        // LOGICA DI LOGIN
-        loginBtn.addEventListener('click', () => {
-            const val = emailInput.value.trim().toLowerCase();
-            const correct = ALLOWED_EMAIL.trim().toLowerCase();
-
-            if (val === correct) {
-                // Login OK
-                errorMsg.classList.remove('visible');
-                // Fade out login
-                loginSection.style.display = 'none';
-                
-                // Show game
-                gameSection.classList.add('active');
-                
-                // Inizializza i rulli solo ora che sono visibili (best practice)
-                initReels();
-            } else {
-                // Errore
-                errorMsg.classList.add('visible');
-                // Shake effect (opzionale, semplice CSS manipulation)
-                emailInput.style.borderColor = 'var(--error-color)';
-                setTimeout(() => emailInput.style.borderColor = '', 500);
-            }
-        });
-
-        // --- DA QUI IN POI È LA LOGICA DELLA SLOT MACHINE ---
-
         const icons = ['🎅', '🎄', '🎁', '❄️', '🦌🛷', '⛄', '🍷', '🎀']; 
         const symbolHeight = 120; 
         const winningIcon = '🎁';
@@ -292,10 +265,31 @@
         ];
         const spinBtn = document.getElementById('spinBtn');
         const modal = document.getElementById('resultModal');
+        const restartBtn = document.getElementById('restartBtn');
 
         // Intervallo confetti
         let confettiInterval = null;
+
+        // LOGICA DI LOGIN
+        loginBtn.addEventListener('click', () => {
+            const val = emailInput.value.trim().toLowerCase();
+            const correct = ALLOWED_EMAIL.trim().toLowerCase();
+
+            if (val === correct) {
+                // Login OK
+                errorMsg.classList.remove('visible');
+                loginSection.style.display = 'none';
+                gameSection.classList.add('active');
+                initReels();
+            } else {
+                // Errore
+                errorMsg.classList.add('visible');
+                emailInput.style.borderColor = 'var(--error-color)';
+                setTimeout(() => emailInput.style.borderColor = '', 500);
+            }
+        });
         
+        // --- INIZIALIZZAZIONE RULLI ---
         function initReels() {
             reels.forEach(reel => {
                 let html = '';
@@ -306,20 +300,43 @@
                 html += `<div class="symbol">${winningIcon}</div>`;
                 reel.innerHTML = html;
 
+                // Reset posizione iniziale
                 reel.style.transition = 'none';
-                // 2. Scegliamo un punto di partenza casuale tra i primi 5 simboli
-                //    Moltiplichiamo per symbolHeight (120) per essere sicuri che sia ALLINEATO al pixel.
                 const startIdx = Math.floor(Math.random() * 5); 
                 const startPos = startIdx * symbolHeight;
-                // 3. Applichiamo la trasformazione
                 reel.style.transform = `translateY(-${startPos}px)`;
             });
         }
 
+        // --- GESTIONE CLICK CON COUNTDOWN ---
         spinBtn.addEventListener('click', () => {
+            // 1. Blocca subito il bottone
             spinBtn.disabled = true;
-            spinBtn.textContent = "Vediamo che succede 🐸";
             
+            // 2. Imposta il contatore
+            let count = 3;
+            spinBtn.textContent = count; // Mostra "3"
+            spinBtn.style.fontSize = "1.5rem"; 
+
+            // 3. Avvia il timer
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    spinBtn.textContent = count; // Mostra "2", poi "1"
+                } else {
+                    // 4. Fine countdown
+                    clearInterval(timer);
+                    spinBtn.style.fontSize = ""; // Reset font size
+                    spinBtn.textContent = "Vediamo che succede 🐸";
+                    
+                    // 5. Lancia l'animazione vera e propria
+                    startSpin(); 
+                }
+            }, 1000); 
+        });
+
+        // --- LOGICA ANIMAZIONE SLOT ---
+        function startSpin() {
             const baseDuration = 3500; 
             const delayBetweenReels = 500; 
 
@@ -329,7 +346,6 @@
                 const duration = baseDuration + (index * delayBetweenReels);
                 
                 reel.classList.add('blur-active');
-
                 reel.style.transition = `transform ${duration}ms cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
                 reel.style.transform = `translateY(-${targetPosition}px)`;
 
@@ -340,38 +356,36 @@
 
             const totalTime = baseDuration + (reels.length - 1) * delayBetweenReels;
             setTimeout(() => { triggerWin(); }, totalTime + 200);
-        });
+        }
 
+        // --- VITTORIA E CORIANDOLI ---
         function triggerWin() {
-            // Esplosione iniziale
             confetti({ particleCount: 250, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#ffffff', '#ff0000'] });
             
             setTimeout(() => {
                 modal.classList.add('visible');
-                
-                // AVVIA IL LOOP E SALVA L'ID NELLA VARIABILE
                 confettiInterval = setInterval(() => {
-                    confetti({ particleCount: 100, spread: 100, origin: { y: 0.7 }, gravity: 2, scalar: 0.8 });
+                    confetti({ particleCount: 50, spread: 100, origin: { y: 0.7 }, gravity: 2, scalar: 0.8 });
                 }, 1500);
-
             }, 500);
         }
 
-        const restartBtn = document.getElementById('restartBtn');
+        // --- RIGIOCA (RESET) ---
+        if(restartBtn) {
+            restartBtn.addEventListener('click', () => {
+                // Ferma coriandoli
+                if (confettiInterval) {
+                    clearInterval(confettiInterval);
+                    confettiInterval = null;
+                }
+                confetti.reset(); 
 
-        restartBtn.addEventListener('click', () => {
-
-        if (confettiInterval) {
-            clearInterval(confettiInterval);
-            confettiInterval = null;
+                modal.classList.remove('visible');      
+                spinBtn.disabled = false;
+                spinBtn.textContent = "Proviamo😏";      
+                initReels(); 
+            });
         }
-        // Nasconde il modale
-        modal.classList.remove('visible');    
-        // Riabilita il bottone principale
-        spinBtn.disabled = false;
-        spinBtn.textContent = "Proviamo😏";    
-        initReels(); 
-        });
     </script>
 </body>
 </html>
